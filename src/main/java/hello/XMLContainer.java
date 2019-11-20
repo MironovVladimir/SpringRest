@@ -21,15 +21,17 @@ public class XMLContainer implements EmployeeContainer {
     private String filename;
     private Document document;
     private Element root;
-    private static AtomicLong currentId = new AtomicLong(0);
+    private AtomicLong currentId = new AtomicLong(0);
 
     XMLContainer(String filename) throws IOException, SAXException, ParserConfigurationException {
         this.filename = filename;
+        logger.info("opening source xml "+ filename);
 
         DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
         this.document = documentBuilder.parse(filename);
         root = document.getDocumentElement();
+        logger.info(filename+" is opened");
     }
 
     @Override
@@ -40,16 +42,22 @@ public class XMLContainer implements EmployeeContainer {
         root.appendChild(employee);
 
         saveChanges();
+
+        logger.info("added employee with id: "+currentId );
     }
 
     @Override
     public void putEmployee(long _id, Employee _employee) {
         NodeList employees = document.getElementsByTagName("employee");
         int i;
+        if(employees.getLength() == 0) return;
         for(i=0; i<employees.getLength();i++){
             Element employee = (Element)employees.item(i);
             if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(_id))) break;
-            if(i==employees.getLength()-1) return;
+            if(i==employees.getLength()-1) {
+                logger.info("tried to update not existing id: "+_id );
+                return;
+            }
         }
         root.removeChild(employees.item(i));
         Element employee = objectToElement(_id, _employee);
@@ -57,30 +65,41 @@ public class XMLContainer implements EmployeeContainer {
         root.appendChild(employee);
 
         saveChanges();
+        logger.info("updated element with "+_id+" id");
     }
 
     @Override
     public void deleteEmployee(long id) {
         NodeList employees = document.getElementsByTagName("employee");
         int i;
+        if(employees.getLength()==0) return;
         for(i=0; i<employees.getLength();i++){
             Element employee = (Element)employees.item(i);
             if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(id))) break;
-            if(i==employees.getLength()-1) return;
+            if(i==employees.getLength()-1) {
+                logger.info("tried to delete not existing id" + id);
+                return;
+            }
         }
         root.removeChild(employees.item(i));
         saveChanges();
+        logger.info("element with "+id+" id was removed");
     }
 
     @Override
     public Employee getEmployee(long id) {
         NodeList employees = document.getElementsByTagName("employee");
         int i;
+        if(employees.getLength()==0) return null;
         for(i=0; i<employees.getLength();i++){
             Element employee = (Element)employees.item(i);
             if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(id))) break;
-            if(i==employees.getLength()-1) return null;
+            if(i==employees.getLength()-1) {
+                logger.info("tried to get element with not existing id: "+id);
+                return null;
+            }
         }
+        logger.info("sending element with id="+id+" to user");
         return elementToObject((Element) employees.item(i));
     }
 
@@ -105,6 +124,7 @@ public class XMLContainer implements EmployeeContainer {
             transformer.transform(source, result);
         } catch(Exception e) {
             e.printStackTrace();
+            logger.warning("error in saving changes");
         }
     }
 

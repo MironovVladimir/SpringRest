@@ -16,9 +16,12 @@ public class GreetingController {
             listEmpl = new XMLContainer("test.xml");
         } catch (IOException e) {
             e.printStackTrace();
+            EmployeeContainer.logger.warning("IO exception "+e.getMessage());
         } catch (SAXException e) {
             e.printStackTrace();
+            EmployeeContainer.logger.warning("SAX exception "+e.getMessage());
         } catch (ParserConfigurationException e) {
+            EmployeeContainer.logger.warning("Parser configuration exception "+e.getMessage());
             e.printStackTrace();
         }
     }
