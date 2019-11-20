@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class XMLContainer implements EmployeeContainer {
-    String filename;
-    Document document;
-    Element root;
-    static AtomicLong currentId = new AtomicLong(0);
+    private String filename;
+    private Document document;
+    private Element root;
+    private static AtomicLong currentId = new AtomicLong(0);
 
     XMLContainer(String filename) throws IOException, SAXException, ParserConfigurationException {
         this.filename = filename;
@@ -33,33 +33,13 @@ public class XMLContainer implements EmployeeContainer {
     }
 
     @Override
-    public void addEmployee(Employee _employee) throws Exception{
+    public void addEmployee(Employee _employee){
 
-        Element employee = document.createElement("employee");
-
-        Element name = document.createElement("name");
-        name.appendChild(document.createTextNode(_employee.getName()));
-        employee.appendChild(name);
-
-        Element surname = document.createElement("surname");
-        surname.appendChild(document.createTextNode(_employee.getSurname()));
-        employee.appendChild(surname);
-
-        Element date = document.createElement("date");
-        date.appendChild(document.createTextNode(_employee.getDate()));
-        employee.appendChild(date);
-
-        Element id = document.createElement("id");
-        id.appendChild(document.createTextNode( String.valueOf(    currentId.incrementAndGet()/*_employee.getId()*/ )));
-        employee.appendChild(id);
+        Element employee = objectToElement(currentId.incrementAndGet(), _employee);
 
         root.appendChild(employee);
 
-        DOMSource source = new DOMSource(document);
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        StreamResult result = new StreamResult(filename);
-        transformer.transform(source, result);
+        saveChanges();
     }
 
     @Override
@@ -72,7 +52,64 @@ public class XMLContainer implements EmployeeContainer {
             if(i==employees.getLength()-1) return;
         }
         root.removeChild(employees.item(i));
-        Element employee = document.createElement("employee");
+        Element employee = objectToElement(_id, _employee);
+
+        root.appendChild(employee);
+
+        saveChanges();
+    }
+
+    @Override
+    public void deleteEmployee(long id) {
+        NodeList employees = document.getElementsByTagName("employee");
+        int i;
+        for(i=0; i<employees.getLength();i++){
+            Element employee = (Element)employees.item(i);
+            if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(id))) break;
+            if(i==employees.getLength()-1) return;
+        }
+        root.removeChild(employees.item(i));
+        saveChanges();
+    }
+
+    @Override
+    public Employee getEmployee(long id) {
+        NodeList employees = document.getElementsByTagName("employee");
+        int i;
+        for(i=0; i<employees.getLength();i++){
+            Element employee = (Element)employees.item(i);
+            if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(id))) break;
+            if(i==employees.getLength()-1) return null;
+        }
+        return elementToObject((Element) employees.item(i));
+    }
+
+    @Override
+    public Map<Long, Employee> getBase() {
+        Map<Long ,Employee> ret = new HashMap<>();
+        NodeList employees = document.getElementsByTagName("employee");
+        int i;
+        for(i=0; i<employees.getLength();i++){
+           Employee employee = elementToObject((Element) employees.item(i));
+            ret.put(employee.getId(), employee);
+        }
+        return ret;
+    }
+
+    private void saveChanges(){
+        try {
+            DOMSource source = new DOMSource(document);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            StreamResult result = new StreamResult(filename);
+            transformer.transform(source, result);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Element objectToElement(long _id, Employee _employee){
+        Element employee = document.createElement("employee");//objectToElement(_employee, id)
 
         Element name = document.createElement("name");
         name.appendChild(document.createTextNode(_employee.getName()));
@@ -87,81 +124,20 @@ public class XMLContainer implements EmployeeContainer {
         employee.appendChild(date);
 
         Element id = document.createElement("id");
-        System.out.println(_id);
-        id.appendChild(document.createTextNode( String.valueOf(    _id/*_employee.getId()*/ )));
+        id.appendChild(document.createTextNode( String.valueOf(_id)));
         employee.appendChild(id);
-
-        root.appendChild(employee);
-
-        try {
-            DOMSource source = new DOMSource(document);
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            StreamResult result = new StreamResult(filename);
-            transformer.transform(source, result);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
+        return employee;
     }
 
-    @Override
-    public void deleteEmployee(long id) {
-        NodeList employees = document.getElementsByTagName("employee");
-        int i;
-        for(i=0; i<employees.getLength();i++){
-            Element employee = (Element)employees.item(i);
-            if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(id))) break;
-            if(i==employees.getLength()-1) return;
-        }
-        root.removeChild(employees.item(i));
-        try {
-            DOMSource source = new DOMSource(document);
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            StreamResult result = new StreamResult("test.xml");
-            transformer.transform(source, result);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public Employee getEmployee(long id) {
-        NodeList employees = document.getElementsByTagName("employee");
-        int i;
-        for(i=0; i<employees.getLength();i++){
-            Element employee = (Element)employees.item(i);
-            if(employee.getElementsByTagName("id").item(0).getTextContent().equals(String.valueOf(id))) break;
-            if(i==employees.getLength()-1) return null;
-        }
-        String retName = ((Element)employees.item(i))
+    private Employee elementToObject(Element employee){
+        String retName = employee
                 .getElementsByTagName("name").item(0).getTextContent();
-        String retSurname = ((Element)employees.item(i))
+        String retSurname = employee
                 .getElementsByTagName("surname").item(0).getTextContent();
-        String retDate = ((Element)employees.item(i))
+        String retDate = employee
                 .getElementsByTagName("date").item(0).getTextContent();
-        long retId = Long.parseLong(((Element)employees.item(i))
+        long retId = Long.parseLong(employee
                 .getElementsByTagName("id").item(0).getTextContent());
         return new Employee(retName, retSurname, retDate, retId);
-    }
-
-    @Override
-    public Map<Long, Employee> getBase() {
-        Map<Long ,Employee> ret = new HashMap<>();
-        NodeList employees = document.getElementsByTagName("employee");
-        int i;
-        for(i=0; i<employees.getLength();i++){
-            String retName = ((Element)employees.item(i))
-                    .getElementsByTagName("name").item(0).getTextContent();
-            String retSurname = ((Element)employees.item(i))
-                    .getElementsByTagName("surname").item(0).getTextContent();
-            String retDate = ((Element)employees.item(i))
-                    .getElementsByTagName("date").item(0).getTextContent();
-            long retId = Long.parseLong(((Element)employees.item(i))
-                    .getElementsByTagName("id").item(0).getTextContent());
-            ret.put(retId ,new Employee(retName, retSurname, retDate, retId));
-        }
-        return ret;
     }
 }

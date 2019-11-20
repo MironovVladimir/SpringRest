@@ -5,15 +5,10 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 public class GreetingController {
-    private static final String template = "Hello, %s";
-    private static final AtomicLong counter = new AtomicLong();
-    //private static final EmployeeList listEmpl = new EmployeeList();
     private static EmployeeContainer listEmpl = null;
 
     static {
@@ -29,8 +24,7 @@ public class GreetingController {
     }
 
     @GetMapping("/greetings")
-    public Map<Long, Employee> greeting(@RequestParam(value = "name"
-            , defaultValue = "World") String name){
+    public Map<Long, Employee> greeting(){
 
         return listEmpl.getBase();
     }
