@@ -1,5 +1,6 @@
 package hello;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
@@ -9,10 +10,12 @@ import java.util.Map;
 
 @RestController
 public class GreetingController {
-    private static EmployeeContainer listEmpl = null;
+
+    @Autowired
+    private SQLContainer listEmpl;
 
     static {
-        try {
+       /* try {
             listEmpl = new XMLContainer("test.xml");
         } catch (IOException e) {
             e.printStackTrace();
@@ -23,7 +26,8 @@ public class GreetingController {
         } catch (ParserConfigurationException e) {
             EmployeeContainer.logger.warning("Parser configuration exception "+e.getMessage());
             e.printStackTrace();
-        }
+        }\
+        */
     }
 
     @GetMapping("/greetings")

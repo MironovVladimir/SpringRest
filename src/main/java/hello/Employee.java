@@ -1,9 +1,17 @@
 package hello;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Employee {
     String name;
     String surname;
     String date;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     long id;
 
     public String getName() {
@@ -43,5 +51,8 @@ public class Employee {
         this.surname = surname;
         this.date = date;
         this.id = id;
+    }
+
+    public Employee() {
     }
 }
