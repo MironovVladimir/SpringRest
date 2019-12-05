@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Map;
 
 @RestController
-public class GreetingController {
+public class WebController {
 
     @Autowired
     private SQLContainer listEmpl;
