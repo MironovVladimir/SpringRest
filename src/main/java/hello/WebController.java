@@ -30,30 +30,30 @@ public class WebController {
         */
     }
 
-    @GetMapping("/greetings")
+    @GetMapping("/EmployeeCrud")
     public Map<Long, Employee> greeting(){
 
         return listEmpl.getBase();
     }
 
-    @RequestMapping("/greetings/{id}")
+    @RequestMapping("/EmployeeCrud/{id}")
     public Employee greetingId(@PathVariable String id){
         return listEmpl.getEmployee(Long.parseLong(id));
     }
 
-    @PostMapping("/greetings")
+    @PostMapping("/EmployeeCrud")
     public Employee postGreeting(@RequestBody Employee input) throws Exception {
         listEmpl.addEmployee(input);
         return input;
     }
 
-    @PutMapping("greetings/{id}")
+    @PutMapping("EmployeeCrud/{id}")
     public Map<Long ,Employee> putMethod (@PathVariable String id, @RequestBody Employee input){
         listEmpl.putEmployee(Long.parseLong(id), input);
         return listEmpl.getBase();
     }
 
-    @DeleteMapping("greetings/{id}")
+    @DeleteMapping("EmployeeCrud/{id}")
     public Map<Long, Employee> deleteMethod(@PathVariable String id){
         listEmpl.deleteEmployee(Long.parseLong(id));
         return listEmpl.getBase();
