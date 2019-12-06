@@ -14,8 +14,9 @@ public class WebController {
     @Autowired
     private SQLContainer listEmpl;
 
+    /*
     static {
-       /* try {
+        try {
             listEmpl = new XMLContainer("test.xml");
         } catch (IOException e) {
             e.printStackTrace();
@@ -26,9 +27,10 @@ public class WebController {
         } catch (ParserConfigurationException e) {
             EmployeeContainer.logger.warning("Parser configuration exception "+e.getMessage());
             e.printStackTrace();
-        }\
-        */
+        }
     }
+    блок необходимый в случае работы с XML
+    */
 
     @GetMapping("/EmployeeCrud")
     public Map<Long, Employee> greeting(){
