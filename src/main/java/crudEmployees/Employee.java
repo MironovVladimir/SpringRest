@@ -1,4 +1,4 @@
-package hello;
+package crudEmployees;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
