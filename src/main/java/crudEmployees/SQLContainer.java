@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@Component
+@Component("sqlContainer")
 public class SQLContainer implements EmployeeContainer {
 
     @Autowired
